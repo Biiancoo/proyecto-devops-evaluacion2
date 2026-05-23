@@ -1,0 +1,63 @@
+name: Pipeline CI/CD Proyecto Semestral
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  AWS_REGION: us-east-1
+  EC2_INSTANCE_ID: "i-0359404ee51600a8e" 
+  APP_DIR: /home/ec2-user/proyecto
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Iniciar sesión en Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: 3. Construir y Subir Backend Ventas
+        run: |
+          docker build -f back-Ventas_SpringBoot/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/backend-ventas:latest back-Ventas_SpringBoot
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend-ventas:latest
+
+      - name: 4. Construir y Subir Backend Despachos
+        run: |
+          docker build -f back-Despachos_SpringBoot/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/backend-despachos:latest back-Despachos_SpringBoot
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend-despachos:latest
+
+      - name: 5. Construir y Subir Frontend
+        run: |
+          docker build -f front_despacho/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/frontend-despacho:latest front_despacho
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend-despacho:latest
+
+      - name: 6. Configurar AWS Credentials
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << EOF
+          [default]
+          aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}
+          EOF
+          cat > ~/.aws/config << EOF
+          [default]
+          region=${AWS_REGION}
+          output=json
+          EOF
+
+      - name: 7. Desplegar en EC2 por AWS SSM
+        run: |
+          aws ssm send-command \
+            --region "${AWS_REGION}" \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --parameters commands="[
+              \"cd ${APP_DIR}\",
+              \"sudo docker compose pull\",
+              \"sudo docker compose up -d\"
+            ]"
