@@ -8,7 +8,7 @@ export const TableCompras = () => {
 
   const compras = async () => {
     //cambiar ip :8080
-    await axios.get("http://44.193.219.171:8080/api/v1/ventas", {
+    await axios.get("http://192.168.30/api/v1/ventas", {
       headers:{
         'Content-Type': 'application/json',
         'Accept': 'application/json'
