@@ -22,10 +22,10 @@ export const FormDespacho = ({ venta, onClose }) => {
     };
 
     console.log("Datos del formulario:", jsonData);
-
+    //cambiar ip :8081
     try {
       await axios.put(
-        `http://192.168.30/api/v1/ventas/${venta.idVenta}`,
+        `http://44.193.219.171:8081/api/v1/ventas/${venta.idVenta}`,
         jsonDataSales,
         {
           headers:{
@@ -34,7 +34,8 @@ export const FormDespacho = ({ venta, onClose }) => {
       }
         }
       );
-      await axios.post("http://192.168.320/api/v1/despachos", jsonData, {
+      //cambiar ip :8081
+      await axios.post("http://44.193.219.171:8081/api/v1/despachos", jsonData, {
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json'

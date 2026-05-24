@@ -14,9 +14,10 @@ export const FormCierreDespacho = ({ despacho, onClose }) => {
 
     console.log("Datos del formulario:", jsonData);
 
+    //cambiar ip :8081
     try {
       await axios.put(
-        `http://192.168.320/api/v1/despachos/${despacho.idDespacho}`,
+        `http://44.193.219.171:8081/api/v1/despachos/${despacho.idDespacho}`, 
         jsonData,
         {
           headers:{
