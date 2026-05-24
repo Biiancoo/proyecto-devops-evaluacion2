@@ -31,4 +31,5 @@ public class Venta {
     private LocalDate fechaCompra;
     @NotNull(message = "El campo de despacho debe ser proporcionado")
     private Boolean despachoGenerado = false;
+    // a
 }
